@@ -1,0 +1,37 @@
+image:
+  name: ouadocker/ouajarvis
+
+pipelines:
+  pull-requests:
+    feature/*:
+      - step:
+          name: Validation
+          script:
+            - ant -buildfile build/build.xml validationOnly -Dsfdc.username=$SFDC_UAT_USERNAME -Dsfdc.password=$SFDC_UAT_PASSWORD -Dsfdc.serverurl=https://$SFDC_UAT_SERVERURL
+
+  branches:
+    develop:
+       - step:
+           name: Validation
+           script:
+             - ant -buildfile build/build.xml validationOnly -Dsfdc.username=$SFDC_UAT_USERNAME -Dsfdc.password=$SFDC_UAT_PASSWORD -Dsfdc.serverurl=https://$SFDC_UAT_SERVERURL
+           artifacts:
+             - build/log.txt
+       - step:
+           name: Quick Deploy
+           trigger: manual
+           script:
+             - ant -buildfile build/build.xml quickDeploy -Dsfdc.username=$SFDC_UAT_USERNAME -Dsfdc.password=$SFDC_UAT_PASSWORD -Dsfdc.serverurl=https://$SFDC_UAT_SERVERURL
+
+    master:
+       - step:
+           name: Validation
+           script:
+             - ant -buildfile build/build.xml validationOnly -Dsfdc.username=$SFDC_PROD_USERNAME -Dsfdc.password=$SFDC_PROD_PASSWORD -Dsfdc.serverurl=https://$SFDC_PROD_SERVERURL
+           artifacts:
+             - build/log.txt
+       - step:
+           name: Quick Deploy
+           trigger: manual
+           script:
+             - ant -buildfile build/build.xml quickDeploy -Dsfdc.username=$SFDC_PROD_USERNAME -Dsfdc.password=$SFDC_PROD_PASSWORD -Dsfdc.serverurl=https://$SFDC_PROD_SERVERURL
